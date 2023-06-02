@@ -1,0 +1,286 @@
+{
+    "options": [
+        {
+            "enabled": false,
+            "definition": {
+                "id": "5d58cc01-7c75-450c-be18-a388ddb129ec"
+            },
+            "inputs": {
+                "branchFilters": "[\"+refs/heads/*\"]",
+                "additionalFields": "{}"
+            }
+        },
+        {
+            "enabled": false,
+            "definition": {
+                "id": "a9db38f9-9fdc-478c-b0f9-464221e58316"
+            },
+            "inputs": {
+                "workItemType": "Bug",
+                "assignToRequestor": "true",
+                "additionalFields": "{}"
+            }
+        }
+    ],
+    "triggers": [
+        {
+            "branchFilters": [
+                "+refs/heads/Release"
+            ],
+            "pathFilters": [],
+            "batchChanges": true,
+            "maxConcurrentBuildsPerBranch": 1,
+            "pollingInterval": 0,
+            "triggerType": 2
+        }
+    ],
+    "variables": {
+        "solution.name": {
+            "value": "solutionname_here",
+            "allowOverride": true
+        },
+        "system.debug": {
+            "value": "false",
+            "allowOverride": true
+        },
+        "Version": {
+            "value": ""
+        }
+    },
+    "properties": {},
+    "tags": [],
+    "jobAuthorizationScope": 1,
+    "jobTimeoutInMinutes": 60,
+    "jobCancelTimeoutInMinutes": 5,
+    "process": {
+        "phases": [
+            {
+                "steps": [
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Tool Installer ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "8015465b-f367-4ec4-8215-8edf682574d3",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "DefaultVersion": "false",
+                            "PowerAppsAdminVersion": "2.0.154",
+                            "XrmToolingPackageDeploymentVersion": "3.3.0.972",
+                            "MicrosoftPowerAppsCheckerVersion": "1.0.29",
+                            "CrmSdkCoreToolsVersion": "9.1.0.115",
+                            "XrmOnlineManagementApiVersion": "(obsolete)"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Pack Solution ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "769929ed-e421-451b-8255-21a8d9d9d3f9",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "SolutionSourceFolder": "Solutions/$(solution.name)",
+                            "SolutionOutputFile": "$(Agent.TempDirectory)/$(solution.name).zip",
+                            "SolutionType": "Unmanaged",
+                            "SingleComponent": "None",
+                            "MapFile": "",
+                            "LocaleTemplate": "",
+                            "Localize": "false",
+                            "UseLcid": "false",
+                            "DisablePluginRemap": "false",
+                            "ProcessCanvasApps": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": false,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Checker ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "54b4d3aa-732f-436b-9996-2a96a6715191",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "authenticationType": "PowerPlatformSPN",
+                            "PowerPlatformEnvironment": "",
+                            "PowerPlatformSPN": "3a9004ca-6d96-4002-8be8-2ac34a7c8ed3",
+                            "UseDefaultPACheckerEndpoint": "true",
+                            "CustomPACheckerEndpoint": "",
+                            "FileLocation": "localFiles",
+                            "FilesToAnalyze": "$(Agent.TempDirectory)/$(solution.name).zip",
+                            "FilesToAnalyzeSasUri": "",
+                            "FilesToExclude": "",
+                            "RulesToOverride": "",
+                            "RuleSet": "0ad12346-e108-40b8-a956-9a8f95ea18c9",
+                            "ErrorLevel": "HighIssueCount",
+                            "ErrorThreshold": "0",
+                            "FailOnPowerAppsCheckerAnalysisError": "true",
+                            "ArtifactDestinationName": "CodeAnalysisLogs"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "PowerShell Script",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "inline",
+                            "filePath": "Scripts/set_version_deploy_build.ps1",
+                            "arguments": "",
+                            "script": "$Version = Select-Xml $(Build.SourcesDirectory)\\Solutions\\$(solution.name)\\Other\\Solution.xml -XPath \"/ImportExportXml/SolutionManifest/Version\" | ForEach-Object {$_.node.InnerXML}\n\n#version is sometimes too long\n$array = New-Object System.Collections.ArrayList\nforeach($i in $version.Split('.')[0 .. 2]) { $array.Add($i) }\n$version = $array -join \".\"\n\nWrite-Output ('##vso[task.setvariable variable=version]{0}' -f $Version)",
+                            "errorActionPreference": "stop",
+                            "warningPreference": "default",
+                            "informationPreference": "default",
+                            "verbosePreference": "default",
+                            "debugPreference": "default",
+                            "progressPreference": "silentlyContinue",
+                            "failOnStderr": "false",
+                            "showWarnings": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "false",
+                            "workingDirectory": "",
+                            "runScriptInSeparateScope": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Universal publish",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e0b79640-8625-11e8-91be-db2878ff888a",
+                            "versionSpec": "0.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "command": "publish",
+                            "downloadDirectory": "$(System.DefaultWorkingDirectory)",
+                            "internalOrExternalDownload": "internal",
+                            "externalEndpoint": "",
+                            "feedListDownload": "6bd63489-8b25-4ed5-b0bf-fb4a155841f6/e7ba9c6e-dcae-4534-ac0f-14fa0eb6a37c",
+                            "packageListDownload": "$(DEV_solution_name)",
+                            "versionListDownload": "",
+                            "feedDownloadExternal": "",
+                            "packageDownloadExternal": "",
+                            "versionDownloadExternal": "",
+                            "publishDirectory": "$(Build.ArtifactStagingDirectory)",
+                            "internalOrExternalPublish": "internal",
+                            "externalEndpoints": "",
+                            "feedListPublish": "6bd63489-8b25-4ed5-b0bf-fb4a155841f6/e7ba9c6e-dcae-4534-ac0f-14fa0eb6a37c",
+                            "publishPackageMetadata": "true",
+                            "packageListPublish": "$(solution.name)",
+                            "feedPublishExternal": "",
+                            "packagePublishExternal": "",
+                            "versionPublishSelector": "custom",
+                            "versionPublish": "$(version)",
+                            "packagePublishDescription": "",
+                            "verbosity": "None",
+                            "publishedPackageVar": ""
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Publish Artifact: solutions",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "PathtoPublish": "$(Agent.TempDirectory)/$(solution.name).zip",
+                            "ArtifactName": "Solutions",
+                            "ArtifactType": "Container",
+                            "TargetPath": "",
+                            "Parallel": "false",
+                            "ParallelCount": "8",
+                            "FileCopyOptions": "",
+                            "StoreAsTar": "false"
+                        }
+                    }
+                ],
+                "name": "PP Solution Packager",
+                "refName": "Job_1",
+                "condition": "succeeded()",
+                "target": {
+                    "executionOptions": {
+                        "type": 0
+                    },
+                    "allowScriptsAuthAccessOption": false,
+                    "type": 1
+                },
+                "jobAuthorizationScope": 1
+            }
+        ],
+        "target": {
+            "agentSpecification": {
+                "identifier": "windows-2019"
+            }
+        },
+        "type": 1
+    },
+    "repository": {
+        "properties": {
+            "cleanOptions": "0",
+            "labelSources": "0",
+            "labelSourcesFormat": "$(build.buildNumber)",
+            "reportBuildStatus": "true",
+            "gitLfsSupport": "false",
+            "skipSyncSource": "false",
+            "checkoutNestedSubmodules": "false",
+            "fetchDepth": "0"
+        },
+        "id": "acbb4012-299b-4085-b84d-afdebc095ee0",
+        "type": "TfsGit",
+        "name": "PP ALM Demo",
+        "defaultBranch": "refs/heads/Release",
+        "clean": "false",
+        "checkoutSubmodules": false
+    },
+    "processParameters": {},
+    "quality": 1,
+    "drafts": [],
+    "name": "2. Deploy MS Solution from Git",
+    "path": "\\",
+    "type": 2,
+    "queueStatus": 0,
+    "revision": 1
+}

@@ -1,0 +1,312 @@
+{
+    "options": [
+        {
+            "enabled": false,
+            "definition": {
+                "id": "5d58cc01-7c75-450c-be18-a388ddb129ec"
+            },
+            "inputs": {
+                "branchFilters": "[\"+refs/heads/*\"]",
+                "additionalFields": "{}"
+            }
+        },
+        {
+            "enabled": false,
+            "definition": {
+                "id": "a9db38f9-9fdc-478c-b0f9-464221e58316"
+            },
+            "inputs": {
+                "workItemType": "Bug",
+                "assignToRequestor": "true",
+                "additionalFields": "{}"
+            }
+        }
+    ],
+    "variables": {
+        "solution.name": {
+            "value": "solutionname_here",
+            "allowOverride": true
+        },
+        "solution.version.prefix": {
+            "value": "1.0",
+            "allowOverride": true
+        },
+        "system.debug": {
+            "value": "false",
+            "allowOverride": true
+        }
+    },
+    "properties": {},
+    "tags": [],
+    "buildNumberFormat": "$(rev:r)",
+    "jobAuthorizationScope": 1,
+    "jobTimeoutInMinutes": 60,
+    "jobCancelTimeoutInMinutes": 5,
+    "process": {
+        "phases": [
+            {
+                "steps": [
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Tool Installer ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "8015465b-f367-4ec4-8215-8edf682574d3",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "DefaultVersion": "true",
+                            "PowerAppsAdminVersion": "2.0.154",
+                            "XrmToolingPackageDeploymentVersion": "3.3.0.972",
+                            "MicrosoftPowerAppsCheckerVersion": "1.0.29",
+                            "CrmSdkCoreToolsVersion": "9.1.0.115",
+                            "XrmOnlineManagementApiVersion": "(obsolete)"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Set Solution Version ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "2c73f444-efd5-46b6-9416-44273166267b",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "authenticationType": "PowerPlatformSPN",
+                            "PowerPlatformEnvironment": "",
+                            "PowerPlatformSPN": "f573e9d6-1f42-4499-8f14-272038eae0d2",
+                            "SolutionName": "$(solution.name)",
+                            "SolutionVersionNumber": "$(solution.version.prefix).$(Build.BuildNumber).$(build.buildid)"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Export Solution ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "16f6dae7-e6ef-4629-ae75-7988463cb6a6",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "authenticationType": "PowerPlatformSPN",
+                            "PowerPlatformEnvironment": "",
+                            "PowerPlatformSPN": "f573e9d6-1f42-4499-8f14-272038eae0d2",
+                            "Environment": "$(BuildTools.EnvironmentUrl)",
+                            "SolutionName": "$(solution.name)",
+                            "SolutionOutputFile": "$(build.binariesdirectory)\\$(solution.name).zip",
+                            "Managed": "false",
+                            "TargetVersion": "",
+                            "AsyncOperation": "true",
+                            "MaxAsyncWaitTime": "60",
+                            "OverwriteLocalSolution": "true",
+                            "ExportAutoNumberingSettings": "false",
+                            "ExportCalendarSettings": "false",
+                            "ExportCustomizationSettings": "false",
+                            "ExportEmailTrackingSettings": "false",
+                            "ExportExternalApplicationSettings": "false",
+                            "ExportGeneralSettings": "false",
+                            "ExportIsvConfig": "false",
+                            "ExportMarketingSettings": "false",
+                            "ExportOutlookSynchronizationSettings": "false",
+                            "ExportRelationshipRoles": "false",
+                            "ExportSales": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Configure GIT repo",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "script": "scripts/prepare_build.bat",
+                            "workingDirectory": "",
+                            "failOnStderr": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Power Platform Unpack Solution ",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "3cac89bb-1ef1-4aa7-a3c6-36c6e79c700e",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "SolutionInputFile": "$(build.binariesdirectory)\\$(solution.name).zip",
+                            "SolutionTargetFolder": "Solutions/$(solution.name)",
+                            "SolutionType": "Unmanaged",
+                            "OverwriteFiles": "true",
+                            "SingleComponent": "None",
+                            "MapFile": "",
+                            "LocaleTemplate": "",
+                            "Localize": "false",
+                            "UseLcid": "false",
+                            "ProcessCanvasApps": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Check in the GIT repo changes commit",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "script": "scripts/checkin_build.bat",
+                            "workingDirectory": "",
+                            "failOnStderr": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Unmanaged package for $(solution.name)",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e0b79640-8625-11e8-91be-db2878ff888a",
+                            "versionSpec": "0.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "command": "publish",
+                            "downloadDirectory": "$(System.DefaultWorkingDirectory)",
+                            "internalOrExternalDownload": "internal",
+                            "externalEndpoint": "",
+                            "feedListDownload": "6bd63489-8b25-4ed5-b0bf-fb4a155841f6/9f9e803f-e020-4b79-ad23-3161f9f83b11",
+                            "packageListDownload": "$(solution.name)",
+                            "versionListDownload": "$(solution.version.prefix).$(Build.BuildNumber)",
+                            "feedDownloadExternal": "",
+                            "packageDownloadExternal": "",
+                            "versionDownloadExternal": "",
+                            "publishDirectory": "$(Build.ArtifactStagingDirectory)",
+                            "internalOrExternalPublish": "internal",
+                            "externalEndpoints": "",
+                            "feedListPublish": "6bd63489-8b25-4ed5-b0bf-fb4a155841f6/9f9e803f-e020-4b79-ad23-3161f9f83b11",
+                            "publishPackageMetadata": "true",
+                            "packageListPublish": "$(solution.name)",
+                            "feedPublishExternal": "",
+                            "packagePublishExternal": "",
+                            "versionPublishSelector": "custom",
+                            "versionPublish": "$(solution.version.prefix).$(Build.BuildNumber)",
+                            "packagePublishDescription": "$(solution.version.prefix).$(Build.BuildNumber).$(build.buildid)",
+                            "verbosity": "None",
+                            "publishedPackageVar": ""
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Publish Artifact: Unmanaged Solution",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "PathtoPublish": "$(build.binariesdirectory)\\$(solution.name).zip",
+                            "ArtifactName": "Unmanaged Solution",
+                            "ArtifactType": "Container",
+                            "TargetPath": "",
+                            "Parallel": "false",
+                            "ParallelCount": "8",
+                            "FileCopyOptions": "",
+                            "StoreAsTar": "false"
+                        }
+                    }
+                ],
+                "name": "Extact Solution and Check in into GIT",
+                "refName": "Job_1",
+                "condition": "succeeded()",
+                "target": {
+                    "executionOptions": {
+                        "type": 0
+                    },
+                    "allowScriptsAuthAccessOption": true,
+                    "type": 1
+                },
+                "jobAuthorizationScope": 1
+            }
+        ],
+        "target": {
+            "agentSpecification": {
+                "identifier": "windows-latest"
+            }
+        },
+        "type": 1
+    },
+    "repository": {
+        "properties": {
+            "cleanOptions": "1",
+            "labelSources": "0",
+            "labelSourcesFormat": "$(build.buildNumber)",
+            "reportBuildStatus": "true",
+            "gitLfsSupport": "false",
+            "skipSyncSource": "false",
+            "checkoutNestedSubmodules": "false",
+            "fetchDepth": "0"
+        },
+        "id": "acbb4012-299b-4085-b84d-afdebc095ee0",
+        "type": "TfsGit",
+        "name": "PP ALM Demo",
+        "defaultBranch": "refs/heads/DEV",
+        "clean": "true",
+        "checkoutSubmodules": false
+    },
+    "processParameters": {},
+    "quality": 1,
+    "drafts": [],
+    "name": "1. Export MS Solution into Git",
+    "path": "\\",
+    "type": 2,
+    "queueStatus": 0,
+    "revision": 1
+}

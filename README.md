@@ -37,7 +37,7 @@ The pipeline contains already 3 stages and can been adjusted further based on th
 The actual stages already included are:
 1. **Prepare**: Stage needed to figure out the solution name from the artifact, as we want this pipeline as dynamic as possible. This stage contains only 1 step and this only Step is:
     1. Get Solution Zip FileName (Inline)
-1. **Buld**: Stage needed to convert the initial unmanaged solution into a managed solution. It will been using a *build* or *staging* environment only used to convert unmanaged into managed solution. This stage contains the following 9 steps:
+1. **Build**: Stage needed to convert the initial unmanaged solution into a managed solution. It will been using a *build* or *staging* environment only used to convert unmanaged into managed solution. This stage contains the following 9 steps:
     1. Power Platform Tool Installer 
     1. Power Platform Delete Solution 
     1. Power Platform Import Solution 
@@ -54,7 +54,7 @@ The actual stages already included are:
 ## Scripts
 There are 2 scripts included into the pipeline that are provided as file instead of inline. There are normally placed within the repository that are mapped and linked to the build-pipelines.
 The scripts are:
-1. **checkin_build.bat**: This batch file will do the actual checking and commit of the unpacked content into the repository.
+1. **checkin_build.bat**: This batch file will do the actual check and commit the unpacked content into the repository.
 1. **prepare_build.bat**: This batch file will set the global git username and email address  based on the user information of the user that actually exectured the first build pipeline. This user information is used to associated with the commits on the repositories. It also prepare the local source control repository and checkout the current *DEV* branch. 
 
 ## Artifacts
@@ -62,4 +62,4 @@ During the pipelines, different artifact locations are used.
 
 1. __DEV_solutions__: Used to store the actual exported solution coming from the developpers environments during the first build-pipeline.
 1. __GIT_solutions__: Used to store the repackaged solutions from the second build pipeline. Those solutions normally never has been exported out of environment and are build from within source code after a pull request into a release branch
-1.  __BLD_solutions__: Used in the release pipeline to convert the unmanaged solution into a managed solution and before installing into a test, acceptance or production environment. 
+1. __BLD_solutions__: Used in the release pipeline to convert the unmanaged solution into a managed solution and before installing into a test, acceptance or production environment. 
